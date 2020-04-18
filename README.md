@@ -54,9 +54,9 @@ assert( results.numberOfRecordsUpdated === 1 );
 
 ```js
 await rds.transaction().then(async (transactionId) => {
-    await rds.query("INSERT INTO Name (id, name) VALUES(null, :name)", { name: "Jules Winnfield" }, transactionId);
-    await rds.query("INSERT INTO Name (id, name) VALUES(null, :name)", { name: "Vincent Vega" }, transactionId);
-    await rds.query("INSERT INTO Name (id, name) VALUES(null, :name)", { name: "Marsellus Wallace" }, transactionId);
+    await rds.query("INSERT INTO Name (name) VALUES(:name)",{ name: "Jules Winnfield" }, transactionId);
+    await rds.query("INSERT INTO Name (name) VALUES(:name)", { name: "Vincent Vega" }, transactionId);
+    await rds.query("INSERT INTO Name (name) VALUES(:name)", { name: "Marsellus Wallace" }, transactionId);
     await rds.commit(transactionId);
 });
 ```
