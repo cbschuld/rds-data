@@ -4,7 +4,7 @@ import { v4 as uuid } from "uuid";
 const id = uuid();
 let pk = 0;
 
-test('Insert UUID', async () => {
+xtest('Insert UUID', async () => {
     const rds = setupRDSDatabase().getInstance();
     const results = await rds.query("INSERT INTO TestList (id,uuid) VALUES(null,:id)", { id });
 
@@ -14,7 +14,7 @@ test('Insert UUID', async () => {
     pk = results.insertId || 0;
 });
 
-test('Read back a UUID and validate content', async () => {
+xtest('Read back a UUID and validate content', async () => {
     const rds = setupRDSDatabase().getInstance();
     const results = await rds.query("SELECT id, uuid FROM TestList WHERE id = :pk", { pk });
 

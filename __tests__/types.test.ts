@@ -13,7 +13,7 @@ const ch = uuid58();
 const vc = uuid58() + uuid58() + uuid58() + uuid58() + uuid58() + uuid58();
 let pk = 0;
 
-test('Insert row of unique types', async () => {
+xtest('Insert row of unique types', async () => {
     const rds = setupRDSDatabase().getInstance();
     const results = await rds.query(
         `INSERT INTO TestType (id,bin,bit,ts,dte,dt,i,iu,txt,ch,vc)
@@ -27,7 +27,7 @@ test('Insert row of unique types', async () => {
     pk = results.insertId || 0;
 });
 
-test('Read back the types and validate', async () => {
+xtest('Read back the types and validate', async () => {
     const rds = setupRDSDatabase().getInstance();
     const results = await rds.query(
         `SELECT id,HEX(bin) AS b58,bit,ts,dte,dt,i,iu,txt,ch,vc

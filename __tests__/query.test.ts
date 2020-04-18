@@ -1,6 +1,6 @@
 import {setupRDSDatabase} from "./db";
 
-test('Read Query of a Single Integer check return payload', async () => {
+xtest('Read Query of a Single Integer check return payload', async () => {
     const rds = setupRDSDatabase().getInstance();
     const results = await rds.query("SELECT id FROM TestList WHERE id = 1 LIMIT 1");
     
@@ -11,7 +11,7 @@ test('Read Query of a Single Integer check return payload', async () => {
     expect(results.data[0].id.number).toBe(1);
 });
 
-test('Read Query of a Single Integer check return payload', async () => {
+xtest('Read Query of a Single Integer check return payload', async () => {
     const rds = setupRDSDatabase().getInstance();
     const results = await rds.query("SELECT id FROM TestList WHERE id = 1 LIMIT 1");
     

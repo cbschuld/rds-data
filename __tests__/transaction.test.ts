@@ -1,7 +1,7 @@
 import {setupRDSDatabase} from "./db";
 import {v4 as uuid} from "uuid";
 
-test('Simple Transaction', async () => {
+xtest('Simple Transaction', async () => {
     const rds = setupRDSDatabase().getInstance();
     const uuid1 = uuid();
     const uuid2 = uuid();
@@ -25,7 +25,7 @@ test('Simple Transaction', async () => {
     expect(startCount).toBe(endCount - 3);
 });
 
-test('Rollback Transaction', async () => {
+xtest('Rollback Transaction', async () => {
     const rds = setupRDSDatabase().getInstance();
     const uuid1 = uuid();
     const uuid2 = uuid();
