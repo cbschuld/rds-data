@@ -1,5 +1,5 @@
-import { RDSData, RDSDataOptions } from './RDSData';
-import { config } from 'aws-sdk';
+import { RDSData, RDSDataOptions } from "./RDSData";
+import { config } from "aws-sdk";
 
 export default class RDSDatabase {
   private static _instance: RDSData;
@@ -10,7 +10,7 @@ export default class RDSDatabase {
   }
 
   public setOptions(options: RDSDataOptions): RDSDatabase {
-    options.region = options.region ?? config.region
+    options.region = options.region ?? config.region;
     RDSDatabase._options = options;
     return this;
   }
