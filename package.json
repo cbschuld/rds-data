@@ -1,8 +1,8 @@
 {
   "name": "rds-data",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A decorator for the AWS Data API for Aurora Serverless. It decorates and abstracts the Amazon SDK's implementation to make it feel more like a traditional MySQL wrapper than an HTTP based web service. It is written in Typescript and provides type-aware return objects which allows for better support in Typescript-based solutions.",
-  "main": "RDSData.ts",
+  "main": "index.ts",
   "types": "lib/index.d.ts",
   "scripts": {
     "test": "jest --config jestconfig.json",

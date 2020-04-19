@@ -1,5 +1,11 @@
 # AWS Aurora Data API Client
 
+<p>
+  <img alt="npm" src="https://img.shields.io/npm/dw/rds-data?style=flat-square">
+  <img alt="NPM" src="https://img.shields.io/npm/l/rds-data?style=flat-square">
+  <img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square">
+</p>
+
 A decorator for the AWS Data API for Aurora Serverless.  It decorates and abstracts the Amazon SDK's implementation to make it feel more like a traditional MySQL wrapper than an HTTP based web service.  It is written in Typescript and provides type-aware return objects which allows for better support in Typescript-based solutions.
 
 ## Installation
@@ -64,6 +70,40 @@ await rds.transaction().then(async (transactionId) => {
     // can do a rollback easily
     await rds.rollback(transactionId);
 ```
+
+## Typed Results
+
+When a response comes back from the decorator it is stored in specific typed results.  Here is an example of pulling a **date**, a **string** and a **number**
+
+```js
+const db = new RDSDatabase(params).getInstance();
+const results = db.query( "SELECT born, name, age FROM Names WHERE name = :name", { name: "Scarlett Johansson" });
+
+for(const result of results.data) {
+  const born = result.date; // Date() instance === 1984-11-22
+  const name = result.string; // string instance === "Scarlett Johansson"
+  const age = result.number; // integer primitive === 35
+}
+```
+
+## Types
+
+When a response comes in the RDSData returns it already typed for you.  Depending on the column type it also may coerce or represent the value in another "type."
+
+Results are managed from the following database types into result types:
+
+| Database Type | RDSData Type | Description |
+| ------------- | ------------ | ----------- |
+| BINARY | *row*.buffer | converts the blob value into a new Buffer |
+| BINARY | *row*.string | converts the binary value into a string |
+| BIT | *row*.boolean | converts the bit into boolean |
+| BIT | *row*.number | converts the bit to either a 1 or a 0 |
+| TIMESTAMP, DATETIME and DATE | *row*.date | a parsed instance of `new Date()` |
+| TIMESTAMP, DATETIME and DATE | *row*.string | the string value of the date/time ISO8601 |
+| TIMESTAMP, DATETIME and DATE | *row*.number | timestamp value of the column |
+| INT, INT UNSIGNED, BIGINT, BIGINT UNSIGNED | *row*.number | numeric value |
+| TEXT, CHAR, VARCHAR | *row*.string | string value |
+
 
 ## Overview 
 Amazon AWS produces a Data API for Aurora Serverless which is a great API if you are building serverless solutions.  One of the consistent challenges with serverless lambda in a VPC has extended cold start times and does not have access to the outside world unless you stand up a NAT Gateway.  Thus, inside the VPC you can see your Aurora instances but you cannot see the outside world.  The API provides a nice way to exist in the traditional lambda pool but still access your private LAN Aurora instance.  The API also helps with connection pooling and other challenges with building serverless applications that may end up with aggressive concurrency.
