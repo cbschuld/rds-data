@@ -31,7 +31,11 @@ xtest('Rollback Transaction', async () => {
     const uuid2 = uuid();
     const uuid3 = uuid();
 
+<<<<<<< Updated upstream
     const startInfo = await rds.query("SELECT COUNT(id) AS cn FROM TestList");
+=======
+  await sleepyTime(500);
+>>>>>>> Stashed changes
 
     const results = await rds.transaction().then(async (transactionId) => {
         await rds.query("INSERT INTO TestList (uuid) VALUES (:uuid1)", {uuid1}, transactionId);
