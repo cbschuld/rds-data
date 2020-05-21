@@ -2,6 +2,12 @@
 import { v4 as uuid } from 'uuid';
 import { setupRDSDatabase } from './db';
 
+const sleepyTime = (ms: number): Promise<void> => {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+};
+
 test('Simple Transaction', async () => {
   const rds = setupRDSDatabase().getInstance();
   const uuid1 = uuid();
@@ -43,6 +49,11 @@ test('Rollback Transaction', async () => {
     const r = await rds.rollback(transactionId);
     return r;
   });
+
+  await sleepyTime(250);
+
+  // transactions can execute slow in aurora and
+  // the count can sometimes come back before the lock is over
 
   const endInfo = await rds.query('SELECT COUNT(id) AS cn FROM TestList');
   const startCount = startInfo.data[0].cn.number ?? 0;
