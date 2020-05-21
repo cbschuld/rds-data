@@ -1,8 +1,9 @@
-import { RDSData, RDSDataOptions } from "./RDSData";
 import { config } from "aws-sdk";
+import { RDSData, RDSDataOptions } from "./RDSData";
 
 export default class RDSDatabase {
   private static _instance: RDSData;
+
   private static _options: RDSDataOptions;
 
   constructor(options: RDSDataOptions) {
