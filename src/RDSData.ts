@@ -1,5 +1,5 @@
-import { RDSDataService } from "aws-sdk";
-import { SqlParametersList } from "aws-sdk/clients/rdsdataservice";
+import { RDSDataService } from 'aws-sdk';
+import { SqlParametersList } from 'aws-sdk/clients/rdsdataservice';
 
 export interface RDSDataOptions {
   secretArn: string;
@@ -15,8 +15,15 @@ export interface RDSDataColumn {
   type: string;
 }
 
-export type RDSDataTypes = "stringValue" | "booleanValue" | "longValue" | "isNull" | "blobValue" | undefined;
-export type RDSDataParameterValue = string | Buffer | boolean | number;
+export interface RDSDataType {
+  name: string;
+  value: {
+    [x: string]: string | boolean | Buffer | null;
+  };
+}
+export type RDSDataTypes = 'stringValue' | 'booleanValue' | 'longValue' | 'isNull' | 'blobValue' | undefined;
+
+export type RDSDataParameterValue = string | Buffer | boolean | number | null;
 export interface RDSDataParameters {
   [key: string]: RDSDataParameterValue;
 }
@@ -44,37 +51,38 @@ export interface RDSDataResponse {
 }
 
 export class RDSData {
-  private _rds: RDSDataService | null = null;
-  private _config: RDSDataOptions = {
-    region: "",
-    secretArn: "",
-    resourceArn: "",
-    database: "",
+  private rds: RDSDataService | null = null;
+
+  private config: RDSDataOptions = {
+    region: '',
+    secretArn: '',
+    resourceArn: '',
+    database: '',
   };
 
   constructor(options?: RDSDataOptions) {
     if (options) {
-      this._config = options;
+      this.config = options;
     }
   }
 
-  private getConnection() {
-    if (!this._rds) {
-      this._rds = new RDSDataService({
-        apiVersion: "2018-08-01",
-        region: this._config.region,
+  private getConnection(): RDSDataService {
+    if (!this.rds) {
+      this.rds = new RDSDataService({
+        apiVersion: '2018-08-01',
+        region: this.config.region,
       });
     }
-    return this._rds;
+    return this.rds;
   }
 
   public async query(sql: string, params?: RDSDataParameters, transactionId?: string): Promise<RDSDataResponse> {
-    const parameters = this.formatParameters(params);
+    const parameters = RDSData.formatParameters(params);
     return new Promise((resolve, reject) => {
       let queryParameters: RDSDataService.Types.ExecuteStatementRequest = {
-        secretArn: this._config.secretArn,
-        resourceArn: this._config.resourceArn,
-        database: this._config.database,
+        secretArn: this.config.secretArn,
+        resourceArn: this.config.resourceArn,
+        database: this.config.database,
         includeResultMetadata: true,
         parameters,
         sql,
@@ -87,7 +95,7 @@ export class RDSData {
         .executeStatement(queryParameters)
         .promise()
         .then((response) => {
-          const result = this.resultFormat(response);
+          const result = RDSData.resultFormat(response);
           resolve(result);
         })
         .catch((error) => {
@@ -96,55 +104,62 @@ export class RDSData {
     });
   }
 
-  private formatParameters(params?: RDSDataParameters): SqlParametersList {
+  private static formatParameters(params?: RDSDataParameters): SqlParametersList {
     if (!params) {
       return [];
     }
 
-    const getType = (val: RDSDataParameterValue) =>
-      typeof val === "string"
-        ? "stringValue"
-        : typeof val === "boolean"
-        ? "booleanValue"
-        : typeof val === "number"
-        ? "longValue"
-        : val === null
-        ? "isNull"
-        : Buffer.isBuffer(val)
-        ? "blobValue"
-        : undefined;
-
-    const formatType = (name: string, value: RDSDataParameterValue, type: RDSDataTypes) => {
-      if (!type) {
-        throw new Error(
-          "Invalid Type for name: " + name + " value: " + value + " type: " + type + " typeof: " + typeof value,
-        );
+    const getType = (val: RDSDataParameterValue): RDSDataTypes => {
+      const t = typeof val;
+      if (t === 'string') {
+        return 'stringValue';
       }
+      if (t === 'boolean') {
+        return 'booleanValue';
+      }
+      if (t === 'number') {
+        return 'longValue';
+      }
+      if (val === null) {
+        return 'isNull';
+      }
+      if (Buffer.isBuffer(val)) {
+        return 'blobValue';
+      }
+      return undefined;
+    };
+
+    const formatType = (name: string, value: RDSDataParameterValue, type: RDSDataTypes): RDSDataType => {
+      if (!type) {
+        throw new Error(`Invalid Type for name: ${name} value: ${value} type: ${type} typeof: ${typeof value}`);
+      }
+      const getValue = (t: RDSDataTypes): null | Buffer | boolean | string => {
+        if (t === 'isNull') {
+          return true;
+        }
+        if (t === 'blobValue') {
+          return value as Buffer;
+        }
+        if (t === 'booleanValue') {
+          return !!value;
+        }
+        return value?.toString() || '';
+      };
       return {
         name,
         value: {
-          [type]:
-            type === "isNull"
-              ? null
-              : type === "blobValue"
-              ? (value as Buffer)
-              : type === "booleanValue"
-              ? value
-                ? true
-                : false
-              : value.toString(),
+          [type]: getValue(type),
         },
       };
     };
 
-    const parameters: SqlParametersList = [];
-    for (const key of Object.keys(params)) {
-      parameters.push(formatType(key, params[key], getType(params[key])));
-    }
+    const parameters: SqlParametersList = Object.keys(params).map((key) =>
+      formatType(key, params[key], getType(params[key])),
+    );
     return parameters;
   }
 
-  private resultFormat(response: RDSDataService.Types.ExecuteStatementResponse) {
+  private static resultFormat(response: RDSDataService.Types.ExecuteStatementResponse): RDSDataResponse {
     const insertId =
       response.generatedFields && response.generatedFields.length > 0 ? response.generatedFields[0].longValue : 0;
     const columns: RDSDataColumn[] = [];
@@ -154,108 +169,108 @@ export class RDSData {
     if (response && response.columnMetadata && response.records) {
       response.columnMetadata.map((column) => {
         return columns.push({
-          name: column.label || "",
-          tableName: column.tableName || "",
-          type: column.typeName || "",
+          name: column.label || '',
+          tableName: column.tableName || '',
+          type: column.typeName || '',
         });
       });
 
-      for (const record of response.records) {
+      response.records.forEach((record) => {
         const row: RDSDataRow = {};
-        for (let c = 0; c < record.length; c++) {
+        for (let c = 0; c < record.length; c += 1) {
           /* tslint:disable:no-string-literal */
-          const isNull = record[c]["isNull"] ?? false;
+          const isNull = record[c].isNull ?? false;
           const v: RDSDataResponseValue = { isNull };
           switch (columns[c].type) {
-            case "BINARY":
-              v.buffer = isNull ? undefined : Buffer.from((record[c]["blobValue"] || "").toString());
-              v.string = isNull ? undefined : v.buffer?.toString("base64");
+            case 'BINARY':
+              v.buffer = isNull ? undefined : Buffer.from((record[c].blobValue || '').toString());
+              v.string = isNull ? undefined : v.buffer?.toString('base64');
               break;
-            case "BIT":
-              v.boolean = isNull ? undefined : record[c]["booleanValue"];
+            case 'BIT':
+              v.boolean = isNull ? undefined : record[c].booleanValue;
               v.number = v.boolean ? 1 : 0;
               break;
-            case "TIMESTAMP":
-            case "DATETIME":
-            case "DATE":
-              v.date = isNull ? undefined : new Date(record[c]["stringValue"] ?? "");
-              v.string = isNull ? undefined : record[c]["stringValue"];
+            case 'TIMESTAMP':
+            case 'DATETIME':
+            case 'DATE':
+              v.date = isNull ? undefined : new Date(record[c].stringValue ?? '');
+              v.string = isNull ? undefined : record[c].stringValue;
               v.number = v.date ? v.date.getTime() : 0;
               break;
-            case "INT":
-            case "INT UNSIGNED":
-            case "BIGINT":
-            case "BIGINT UNSIGNED":
-              v.number = isNull ? undefined : record[c]["longValue"];
+            case 'INT':
+            case 'INT UNSIGNED':
+            case 'BIGINT':
+            case 'BIGINT UNSIGNED':
+              v.number = isNull ? undefined : record[c].longValue;
               break;
-            case "TEXT":
-            case "CHAR":
-            case "VARCHAR":
-              v.string = isNull ? undefined : record[c]["stringValue"];
+            case 'TEXT':
+            case 'CHAR':
+            case 'VARCHAR':
+              v.string = isNull ? undefined : record[c].stringValue;
               break;
             default:
-              throw new Error("Missing type: " + columns[c].type);
+              throw new Error(`Missing type: ${columns[c].type}`);
           }
           /* tslint:enable:no-string-literal */
           row[columns[c].name] = v;
         }
         data.push(row);
-      }
+      });
     }
 
     return { data, columns, numberOfRecordsUpdated, insertId };
   }
 
-  public transaction() {
+  public transaction(): Promise<string> {
     return new Promise<string>((resolve, reject) => {
       this.getConnection()
         .beginTransaction({
-          secretArn: this._config.secretArn,
-          resourceArn: this._config.resourceArn,
-          database: this._config.database,
+          secretArn: this.config.secretArn,
+          resourceArn: this.config.resourceArn,
+          database: this.config.database,
         })
         .promise()
         .then((response) => {
-          resolve(response.transactionId ?? "");
+          resolve(response.transactionId ?? '');
         })
-        .catch(() => {
-          reject("");
+        .catch((e) => {
+          reject(e);
         });
     });
   }
 
-  public commit(transactionId: string) {
+  public commit(transactionId: string): Promise<string> {
     return new Promise<string>((resolve, reject) => {
       this.getConnection()
         .commitTransaction({
-          resourceArn: this._config.resourceArn,
-          secretArn: this._config.secretArn,
+          resourceArn: this.config.resourceArn,
+          secretArn: this.config.secretArn,
           transactionId,
         })
         .promise()
         .then((response) => {
-          resolve(response.transactionStatus ?? "");
+          resolve(response.transactionStatus ?? '');
         })
-        .catch(() => {
-          reject("");
+        .catch((e) => {
+          reject(e);
         });
     });
   }
 
-  public rollback(transactionId: string) {
+  public rollback(transactionId: string): Promise<string> {
     return new Promise<string>((resolve, reject) => {
       this.getConnection()
         .rollbackTransaction({
-          resourceArn: this._config.resourceArn,
-          secretArn: this._config.secretArn,
+          resourceArn: this.config.resourceArn,
+          secretArn: this.config.secretArn,
           transactionId,
         })
         .promise()
         .then((response) => {
-          resolve(response.transactionStatus ?? "");
+          resolve(response.transactionStatus ?? '');
         })
-        .catch(() => {
-          reject("");
+        .catch((e) => {
+          reject(e);
         });
     });
   }
