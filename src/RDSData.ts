@@ -6,6 +6,7 @@ export interface RDSDataOptions {
   resourceArn: string;
   database: string;
   region?: string;
+  rdsConfig?: RDSDataService.Types.ClientConfiguration;
 }
 
 // COLUMNS & PARAMETERS -------------------------
@@ -23,7 +24,7 @@ export interface RDSDataType {
 }
 export type RDSDataTypes = 'stringValue' | 'booleanValue' | 'longValue' | 'isNull' | 'blobValue' | undefined;
 
-export type RDSDataParameterValue = string | Buffer | boolean | number | null;
+export type RDSDataParameterValue = string | Buffer | boolean | number | null | undefined;
 export interface RDSDataParameters {
   [key: string]: RDSDataParameterValue;
 }
@@ -71,6 +72,9 @@ export class RDSData {
       this.rds = new RDSDataService({
         apiVersion: '2018-08-01',
         region: this.config.region,
+        // apply extra options
+        // these override apiVersion and region
+        ...this.config.rdsConfig,
       });
     }
     return this.rds;
@@ -171,7 +175,7 @@ export class RDSData {
         return columns.push({
           name: column.label || '',
           tableName: column.tableName || '',
-          type: column.typeName || '',
+          type: column.typeName?.toUpperCase() || '',
         });
       });
 
@@ -186,6 +190,7 @@ export class RDSData {
               v.buffer = isNull ? undefined : Buffer.from((record[c].blobValue || '').toString());
               v.string = isNull ? undefined : v.buffer?.toString('base64');
               break;
+            case 'BOOL':
             case 'BIT':
               v.boolean = isNull ? undefined : record[c].booleanValue;
               v.number = v.boolean ? 1 : 0;
@@ -197,14 +202,21 @@ export class RDSData {
               v.string = isNull ? undefined : record[c].stringValue;
               v.number = v.date ? v.date.getTime() : 0;
               break;
+            case 'INTEGER':
+            case 'INTEGER UNSIGNED':
             case 'INT':
+            case 'INT4':
+            case 'INT8':
             case 'INT UNSIGNED':
             case 'BIGINT':
             case 'BIGINT UNSIGNED':
+            case 'SERIAL':
               v.number = isNull ? undefined : record[c].longValue;
               break;
+            case 'UUID':
             case 'TEXT':
             case 'CHAR':
+            case 'BPCHAR':
             case 'VARCHAR':
               v.string = isNull ? undefined : record[c].stringValue;
               break;

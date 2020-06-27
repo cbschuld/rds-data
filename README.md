@@ -43,8 +43,8 @@ assert( results.data[0].name.string === "Chris Schuld" );
 const results = db.query( "INSERT INTO Name (id, name) VALUES(null, :name)", { name: "Chris Schuld" });
 ```
 ```js
-assert( results.insertId === X); // the id of the insert
-assert( results.numberOfRecordsUpdated === 1 );
+assert( results.insertId === X); // the id of the insert (MySQL only, for PostgreSQL, use RETURNING in your SQL statement)
+assert( results.numberOfRecordsUpdated === 1 ); // note that this is always 0 when using the RETURNING clause in PostgreSQL
 ```
 
 ### Updating Information
@@ -105,7 +105,7 @@ Results are managed from the following database types into result types:
 | TEXT, CHAR, VARCHAR | *row*.string | string value |
 
 
-## Overview 
+## Overview
 Amazon AWS produces a Data API for Aurora Serverless which is a great API if you are building serverless solutions.  One of the consistent challenges with serverless lambda in a VPC has extended cold start times and does not have access to the outside world unless you stand up a NAT Gateway.  Thus, inside the VPC you can see your Aurora instances but you cannot see the outside world.  The API provides a nice way to exist in the traditional lambda pool but still access your private LAN Aurora instance.  The API also helps with connection pooling and other challenges with building serverless applications that may end up with aggressive concurrency.
 
 <img style="zoom:50%;text-align:center;" src="https://user-images.githubusercontent.com/231867/79626919-018d6380-80e9-11ea-9b8b-9891e39a0107.png"/>

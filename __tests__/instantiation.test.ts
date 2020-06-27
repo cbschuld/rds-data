@@ -1,3 +1,10 @@
+/**
+ * lib instantiation tests
+ *
+ * @group pg
+ * @group mysql
+ */
+
 import { config } from 'aws-sdk';
 import { setupRDSDatabase, setupRDSDatabaseNoRegion } from './db';
 

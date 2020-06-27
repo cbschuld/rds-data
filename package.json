@@ -5,7 +5,9 @@
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
   "scripts": {
-    "test": "jest --config jestconfig.json",
+    "test": "echo 'please use either test-mysql or test-pg'; exit -1;",
+    "test-mysql": "jest --config jestconfig.json --group=mysql",
+    "test-pg": "jest --config jestconfig.json --group=pg",
     "build": "tsc",
     "format": "prettier --write \"src/**/*.ts\"",
     "lint": "tslint -p tsconfig.json",
@@ -58,6 +60,7 @@
     "eslint-plugin-prettier": "^3.1.3",
     "eslint-plugin-react": "^7.20.0",
     "jest": "^26.0.1",
+    "jest-runner-groups": "2.0.1",
     "prettier": "^2.0.5",
     "ts-jest": "^26.0.0",
     "tslint": "^6.1.2",

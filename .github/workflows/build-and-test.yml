@@ -1,0 +1,73 @@
+name: Build and Test
+
+on: [push, pull_request]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    env:
+      CI: true
+
+    strategy:
+      matrix:
+        node-version: [10.x, 12.x, 14.x]
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: use node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: cache dependencies
+        uses: actions/cache@v1
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-${{ matrix.node-version }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-${{ matrix.node-version }}-
+            ${{ runner.os }}-npm-
+
+      - name: install
+        run: |
+          npm i
+
+      - name: static checks
+        run: |
+          npm run lint
+
+      - name: build
+        run: |
+          npm run build
+
+      - name: test with PostgreSQL
+        run: |
+          docker-compose -f docker/pg.yml up -d
+          npm t
+          docker-compose -f docker/pg.yml down -v
+        env:
+          DB_TYPE: postgresql
+          RDS_DATA_API_CLIENT_DATABASE: test
+          RDS_DATA_API_CLIENT_REGION: us-east-1
+          RDS_DATA_API_CLIENT_RESOURCE_ARN: arn:aws:rds:us-east-1:123456789012:cluster:dummy
+          RDS_DATA_API_CLIENT_SECRETARN: arn:aws:secretsmanager:us-east-1:123456789012:secret:dummy
+          # these are not valid keys!
+          AWS_ACCESS_KEY_ID: AKIA2L3C3ROEOPJIS4FW
+          AWS_SECRET_ACCESS_KEY: akLSBoe8qJF2lXZCBq/ATPytWSnGRNMEJG11+fg/
+
+      - name: test with MySQL
+        run: |
+          docker-compose -f docker/mysql.yml up -d
+          npm t
+          docker-compose -f docker/mysql.yml down -v
+        env:
+          DB_TYPE: mysql
+          RDS_DATA_API_CLIENT_DATABASE: test
+          RDS_DATA_API_CLIENT_REGION: us-east-1
+          RDS_DATA_API_CLIENT_RESOURCE_ARN: arn:aws:rds:us-east-1:123456789012:cluster:dummy
+          RDS_DATA_API_CLIENT_SECRETARN: arn:aws:secretsmanager:us-east-1:123456789012:secret:dummy
+          # these are not valid keys!
+          AWS_ACCESS_KEY_ID: AKIA2L3C3ROEOPJIS4FW
+          AWS_SECRET_ACCESS_KEY: akLSBoe8qJF2lXZCBq/ATPytWSnGRNMEJG11+fg/

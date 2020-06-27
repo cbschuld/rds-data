@@ -1,0 +1,26 @@
+version: '3.1'
+
+services:
+  local-data-api:
+    image: koxudaxi/local-data-api
+    restart: always
+    environment:
+      ENGINE: PostgreSQLJDBC
+      POSTGRES_HOST: db
+      POSTGRES_DB: "${RDS_DATA_API_CLIENT_DATABASE}"
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: example
+      RESOURCE_ARN: "${RDS_DATA_API_CLIENT_RESOURCE_ARN}"
+      SECRET_ARN: "${RDS_DATA_API_CLIENT_SECRETARN}"
+    ports:
+      - "8080:80"
+  db:
+    image: postgres:10.7-alpine
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: example
+      POSTGRES_USER: postgres
+      POSTGRES_DB: "${RDS_DATA_API_CLIENT_DATABASE}"
+    ports:
+      - "5432:5432"
