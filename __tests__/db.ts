@@ -1,5 +1,8 @@
 import { Agent } from 'http';
+import * as AWS from 'aws-sdk';
 import RDSDatabase from "../src/RDSDatabase";
+
+AWS.config.logger = console;
 
 function getConfig(provideRegion = true) {
     return {
@@ -10,7 +13,7 @@ function getConfig(provideRegion = true) {
         rdsConfig: process.env.CI === 'true'
         ? {
               // we're in a test environment
-              endpoint: 'http://127.0.0.1:8080',
+              endpoint: 'http://localhost:8080',
               httpOptions: {
                   agent: new Agent(),
               },
