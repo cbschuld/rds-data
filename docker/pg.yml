@@ -4,6 +4,8 @@ services:
   local-data-api:
     image: koxudaxi/local-data-api
     restart: always
+    depends_on:
+      - db
     environment:
       ENGINE: PostgreSQLJDBC
       POSTGRES_HOST: db
