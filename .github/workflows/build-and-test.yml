@@ -45,6 +45,7 @@ jobs:
       - name: test with PostgreSQL
         run: |
           docker-compose -f docker/pg.yml up -d
+          for i in {1..30};do echo -e "check $i\n";curl -i http://localhost:8080/;echo -e '\n';sleep 1;done
           npm run test-pg -- --runInBand --ci
           docker-compose -f docker/pg.yml down -v
         env:
