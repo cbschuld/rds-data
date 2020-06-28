@@ -45,7 +45,7 @@ jobs:
       - name: test with PostgreSQL
         run: |
           docker-compose -f docker/pg.yml up -d
-          npm test-pg
+          npm run test-pg
           docker-compose -f docker/pg.yml down -v
         env:
           DB_TYPE: postgresql
@@ -60,7 +60,7 @@ jobs:
       - name: test with MySQL
         run: |
           docker-compose -f docker/mysql.yml up -d
-          npm test-mysql
+          npm run test-mysql
           docker-compose -f docker/mysql.yml down -v
         env:
           DB_TYPE: mysql
