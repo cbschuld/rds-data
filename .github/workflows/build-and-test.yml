@@ -45,7 +45,7 @@ jobs:
       - name: test with PostgreSQL
         run: |
           docker-compose -f docker/pg.yml up -d
-          for i in {1..30};do echo -e "check $i\n";curl -i http://localhost:8080/;echo -e '\n';sleep 1;done
+          for i in {1..30};do echo -e "check $i\n";curl -i 'http://localhost:8080/' || true;echo -e '\n';sleep 1;done
           npm run test-pg -- --runInBand --ci
           docker-compose -f docker/pg.yml down -v
         env:
@@ -61,6 +61,7 @@ jobs:
       - name: test with MySQL
         run: |
           docker-compose -f docker/mysql.yml up -d
+          for i in {1..30};do echo -e "check $i\n";curl -i 'http://localhost:8080/' || true;echo -e '\n';sleep 1;done
           npm run test-mysql -- --runInBand --ci
           docker-compose -f docker/mysql.yml down -v
         env:
