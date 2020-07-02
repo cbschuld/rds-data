@@ -1,8 +1,5 @@
 import { Agent } from 'http';
-import * as AWS from 'aws-sdk';
 import RDSDatabase from "../src/RDSDatabase";
-
-AWS.config.logger = console;
 
 function getConfig(provideRegion = true) {
     return {
