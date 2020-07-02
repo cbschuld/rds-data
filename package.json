@@ -66,8 +66,7 @@
     "tslint": "^6.1.2",
     "tslint-config-prettier": "^1.18.0",
     "typescript": "^3.9.3",
-    "uuid": "^8.1.0",
-    "uuid-base58": "^1.0.1"
+    "uuid": "^8.1.0"
   },
   "dependencies": {
     "aws-sdk": "^2.682.0"

@@ -8,7 +8,6 @@
 
 /* eslint-disable import/no-extraneous-dependencies */
 import { v4 as uuid } from 'uuid';
-import { uuid58 } from 'uuid-base58';
 import { format } from 'date-fns';
 import { setupRDSDatabase } from './db';
 
@@ -17,8 +16,8 @@ const uid = uuid().replace(/-/gi, '');
 const d = new Date('2020-06-27T21:02:28.419Z');
 const i = Math.floor(getRandomArbitrary(1024 * 1024, 0));
 const txt = uuid() + uuid() + uuid() + uuid() + uuid() + uuid();
-const ch = uuid58();
-const vc = uuid58() + uuid58() + uuid58() + uuid58() + uuid58() + uuid58();
+const vc = txt;
+const ch = uuid().substr(0, 22);
 
 beforeAll(async () => {
   const rds = setupRDSDatabase().getInstance();
