@@ -20,11 +20,13 @@ const txt = uuid() + uuid() + uuid() + uuid() + uuid() + uuid();
 const vc = txt;
 const ch = uuid().substr(0, 22);
 
+const TABLE = `TestList${process.env.JEST_WORKER_ID}`;
+
 beforeAll(async () => {
   const rds = setupRDSDatabase().getInstance();
   await rds.query(
-    `DROP TABLE IF EXISTS TestType${process.env.JEST_WORKER_ID};
-    CREATE TABLE TestType${process.env.JEST_WORKER_ID} (
+    `DROP TABLE IF EXISTS ${TABLE};
+    CREATE TABLE ${TABLE} (
       id serial PRIMARY KEY,
       bin bytea DEFAULT NULL,
       bool boolean DEFAULT NULL,
@@ -41,7 +43,7 @@ beforeAll(async () => {
 test('Insert row of unique types', async () => {
   const rds = setupRDSDatabase().getInstance();
   let results = await rds.query(
-    `INSERT INTO TestType${process.env.JEST_WORKER_ID} (bin,bool,ts,dte,dt,i,txt,ch,vc)
+    `INSERT INTO ${TABLE} (bin,bool,ts,dte,dt,i,txt,ch,vc)
         VALUES(decode(:uid, 'hex'),true,NOW(),:dte,:dt,:i,:txt,:ch,:vc)
         RETURNING id`,
     { uid, dte: format(d, 'yyyy-MM-dd HH:mm:ss'), dt: format(d, 'yyyy-MM-dd'), i, txt, ch, vc },
@@ -54,7 +56,7 @@ test('Insert row of unique types', async () => {
 
   results = await rds.query(
     `SELECT id,encode(bin, 'hex') AS b58,bool,ts,dte,dt,i,txt,ch,vc
-            FROM TestType${process.env.JEST_WORKER_ID}
+            FROM ${TABLE}
             WHERE id = :pk`,
     { pk },
   );

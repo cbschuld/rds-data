@@ -19,11 +19,13 @@ const txt = uuid() + uuid() + uuid() + uuid() + uuid() + uuid();
 const vc = txt;
 const ch = uuid().substr(0, 22);
 
+const TABLE = `TestList${process.env.JEST_WORKER_ID}`;
+
 beforeAll(async () => {
   const rds = setupRDSDatabase().getInstance();
-  await rds.query(`DROP TABLE IF EXISTS TestType${process.env.JEST_WORKER_ID};`)
+  await rds.query(`DROP TABLE IF EXISTS ${TABLE};`)
   await rds.query(
-    `CREATE TABLE TestType${process.env.JEST_WORKER_ID} (
+    `CREATE TABLE ${TABLE} (
       id INT UNSIGNED PRIMARY KEY NOT NULL AUTO_INCREMENT,
       bin BINARY(16) DEFAULT NULL,
       bit BIT(1) DEFAULT NULL,
@@ -41,7 +43,7 @@ beforeAll(async () => {
 test('Insert row of different data types', async () => {
   const rds = setupRDSDatabase().getInstance();
   let results = await rds.query(
-    `INSERT INTO TestType${process.env.JEST_WORKER_ID} (id,bin,bit,ts,dte,dt,i,txt,ch,vc)
+    `INSERT INTO ${TABLE} (id,bin,bit,ts,dte,dt,i,txt,ch,vc)
         VALUES(null,UNHEX(:uid),1,NOW(),:dte,:dt,:i,:txt,:ch,:vc)`,
     { uid, ts: format(d, 'yyyy-MM-dd HH:mm:ss'), dte: format(d, 'yyyy-MM-dd HH:mm:ss'), dt: format(d, 'yyyy-MM-dd'), i, txt, ch, vc },
   );
@@ -53,7 +55,7 @@ test('Insert row of different data types', async () => {
 
   results = await rds.query(
     `SELECT id,HEX(bin) AS b58,bit,ts,dte,dt,ui,i,txt,ch,vc
-            FROM TestType${process.env.JEST_WORKER_ID}
+            FROM ${TABLE}
             WHERE id = :pk`,
     { pk },
   );

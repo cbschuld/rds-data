@@ -21,3 +21,10 @@ To debug queries, use this:
 import * as AWS from 'aws-sdk';
 AWS.config.logger = console;
 ```
+
+**Running GitHub Actions Locally**
+Use [act](https://github.com/nektos/act) to run GitHub actions locally:
+
+```
+act -P ubuntu-latest=nektos/act-environments-ubuntu:18.04
+```

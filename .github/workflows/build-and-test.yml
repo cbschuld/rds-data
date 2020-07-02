@@ -54,8 +54,6 @@ jobs:
         run: |
           docker network rm $(docker network ls -q) || true
           docker-compose -f docker/pg.yml up -d
-          for i in {1..30};do echo -e "check $i\n";curl -i 'http://localhost:8080/' || true;echo -e '\n';sleep 1;done
-          aws --endpoint-url 'http://localhost:8080' rds-data execute-statement --database 'test' --resource-arn $RDS_DATA_API_CLIENT_RESOURCE_ARN --secret-arn $RDS_DATA_API_CLIENT_SECRETARN --sql 'SELECT 1 AS hi'
           npm run test-pg -- --runInBand --ci
           docker-compose -f docker/pg.yml down -v
         env:
@@ -65,8 +63,6 @@ jobs:
         run: |
           docker network rm $(docker network ls -q) || true
           docker-compose -f docker/mysql.yml up -d
-          for i in {1..30};do echo -e "check $i\n";curl -i 'http://localhost:8080/' || true;echo -e '\n';sleep 1;done
-          aws --endpoint-url 'http://localhost:8080' rds-data execute-statement --database 'test' --resource-arn $RDS_DATA_API_CLIENT_RESOURCE_ARN --secret-arn $RDS_DATA_API_CLIENT_SECRETARN --sql 'SELECT 1 AS hi'
           npm run test-mysql -- --runInBand --ci
           docker-compose -f docker/mysql.yml down -v
         env:
