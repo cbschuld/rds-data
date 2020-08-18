@@ -1,4 +1,11 @@
-import { config } from 'aws-sdk';
+/**
+ * lib instantiation tests
+ *
+ * @group pg
+ * @group mysql
+ */
+
+import * as AWS from 'aws-sdk';
 import { setupRDSDatabase, setupRDSDatabaseNoRegion } from './db';
 
 test('RDS Instantiation', () => {
@@ -14,7 +21,7 @@ test('RDS Instantiation', () => {
 });
 
 test('RDS Instantiation - no region', () => {
-  config.region = process.env.RDS_DATA_API_CLIENT_REGION;
+  AWS.config.update({region: process.env.RDS_DATA_API_CLIENT_REGION });
   const rds = setupRDSDatabaseNoRegion();
   expect(process.env.RDS_DATA_API_CLIENT_DATABASE).not.toBe('');
   expect(process.env.RDS_DATA_API_CLIENT_RESOURCE_ARN).not.toBe('');

@@ -1,17 +1,29 @@
+import { Agent } from 'http';
 import RDSDatabase from "../src/RDSDatabase";
 
-export const setupRDSDatabase = (): RDSDatabase => new RDSDatabase({
-    region: process.env.RDS_DATA_API_CLIENT_REGION || "",
-    secretArn: process.env.RDS_DATA_API_CLIENT_SECRETARN || "",
-    resourceArn: process.env.RDS_DATA_API_CLIENT_RESOURCE_ARN || "",
-    database: process.env.RDS_DATA_API_CLIENT_DATABASE || ""
-});
+function getConfig(provideRegion = true) {
+    return {
+        region: provideRegion ? process.env.RDS_DATA_API_CLIENT_REGION || "" : undefined,
+        secretArn: process.env.RDS_DATA_API_CLIENT_SECRETARN || "",
+        resourceArn: process.env.RDS_DATA_API_CLIENT_RESOURCE_ARN || "",
+        database: process.env.RDS_DATA_API_CLIENT_DATABASE || "",
+        rdsConfig: process.env.CI === 'true'
+        ? {
+              // we're in a test environment
+              endpoint: 'http://localhost:8080',
+              httpOptions: {
+                  agent: new Agent(),
+              },
+          }
+        : {
+              // not in a test environment
+          },
+    }
+}
 
-export const setupRDSDatabaseNoRegion = (): RDSDatabase => new RDSDatabase({
-    secretArn: process.env.RDS_DATA_API_CLIENT_SECRETARN || "",
-    resourceArn: process.env.RDS_DATA_API_CLIENT_RESOURCE_ARN || "",
-    database: process.env.RDS_DATA_API_CLIENT_DATABASE || ""
-});
+export const setupRDSDatabase = (): RDSDatabase => new RDSDatabase(getConfig(true));
+
+export const setupRDSDatabaseNoRegion = (): RDSDatabase => new RDSDatabase(getConfig(false));
 
 test('RDS Instantiation', () => {
     const rds = setupRDSDatabase();
