@@ -35,7 +35,18 @@
     "lambda",
     "rds-data-service"
   ],
-  "author": "Chris Schuld <cbschuld@gmail.com>",
+  "contributors": [
+    {
+      "name": "Chris Schuld",
+      "email": "cbschuld@gmail.com",
+      "url": "https://chrisschuld.com/"
+    },
+    {
+      "name": "Mark Herhold",
+      "email": "markherhold@gmail.com",
+      "url": "https://medium.com/@markherhold"
+    }
+  ],
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/cbschuld/rds-data/issues"
