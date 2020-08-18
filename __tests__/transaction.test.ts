@@ -43,11 +43,11 @@ test.only('Simple Transaction', async () => {
   expect(results).toBe('Transaction Committed');
 
   const endInfo = await rds.query(`SELECT COUNT(*) AS cn FROM ${TABLE}`);
-  const startCount = startInfo.data[0].cn.number;
-  const endCount = endInfo.data[0].cn.number;
+  const startCount = startInfo.data[0].cn.number || 0;
+  const endCount = endInfo.data[0].cn.number || 0;
 
   expect(results).toBe('Transaction Committed');
-  expect(startCount).toBe(endCount! - 3);
+  expect(startCount).toBe(endCount - 3);
 });
 
 test('Rollback Transaction', async () => {
