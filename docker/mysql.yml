@@ -1,6 +1,16 @@
 version: '3.1'
 
 services:
+  db:
+    image: mysql:5.6
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: example
+      MYSQL_DATABASE: "${RDS_DATA_API_CLIENT_DATABASE}"
+    ports:
+      - "3306:3306"
+
   local-data-api:
     image: koxudaxi/local-data-api:0.4.15
     restart: always
@@ -15,12 +25,3 @@ services:
       SECRET_ARN: "${RDS_DATA_API_CLIENT_SECRETARN}"
     ports:
       - "8080:80"
-  db:
-    image: mysql:5.6
-    command: --default-authentication-plugin=mysql_native_password
-    restart: always
-    environment:
-      MYSQL_ROOT_PASSWORD: example
-      MYSQL_DATABASE: "${RDS_DATA_API_CLIENT_DATABASE}"
-    ports:
-      - "3306:3306"
