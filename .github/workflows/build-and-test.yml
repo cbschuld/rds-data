@@ -30,13 +30,12 @@ jobs:
           node-version: ${{ matrix.node-version }}
 
       - name: cache dependencies
-        uses: actions/cache@v1
+        uses: actions/cache@v2
         with:
           path: ~/.npm
-          key: ${{ runner.os }}-npm-${{ matrix.node-version }}-${{ hashFiles('package-lock.json') }}
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
-            ${{ runner.os }}-npm-${{ matrix.node-version }}-
-            ${{ runner.os }}-npm-
+            ${{ runner.os }}-node-
 
       - name: install
         run: |
@@ -63,6 +62,9 @@ jobs:
         run: |
           docker network rm $(docker network ls -q) || true
           docker-compose -f docker/mysql.yml up -d
+          echo 'pausing: waiting for mysql to come available'
+          ./docker/wait/wait-for-mysql.sh
+          echo 'un-pausing: mysql is now available'
           npm run test-mysql -- --runInBand --ci
           docker-compose -f docker/mysql.yml down -v
         env:
