@@ -19,7 +19,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [12.x]
+        node-version: [10.x, 12.x, 14.x]
 
     steps:
       - uses: actions/checkout@v2
@@ -62,9 +62,9 @@ jobs:
         run: |
           docker network rm $(docker network ls -q) || true
           docker-compose -f docker/mysql.yml up -d
-          echo 'pause'
+          echo 'pausing: waiting for mysql to come available'
           ./docker/wait/wait-for-mysql.sh
-          echo 'un-pause'
+          echo 'un-pausing: mysql is now available'
           npm run test-mysql -- --runInBand --ci
           docker-compose -f docker/mysql.yml down -v
         env:
