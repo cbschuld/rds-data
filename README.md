@@ -73,7 +73,7 @@ await rds.transaction().then(async (transactionId) => {
 
 ## Typed Results
 
-When a response comes back from the decorator it is stored in specific typed results.  Here is an example of pulling a **date**, a **string** and a **number**
+When a response comes back from the decorator it is stored in an instance of `ColumnValue` which provides typed results.  Here is an example of pulling a **date**, a **string** and a **number**
 
 ```js
 const db = new RDSDatabase(params).getInstance();
@@ -194,3 +194,5 @@ Statement:
 ## Special Thanks
 
 Special thanks to Jeremy Daly whom was an early adopter of the RDS Data API as well and provides a similar package called the [data-api-client](https://github.com/jeremydaly/data-api-client).  A lot of his work is similar but less type aware.  Additionally portions of this readme are extracted from Jeremy's work!
+
+Additionally, a huge thank you to Mark Herhold for helping to add all of the CI/GH Actions integration as well as providing additional work on the library at large.  The library is better because of his work.
