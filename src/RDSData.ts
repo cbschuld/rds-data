@@ -1,5 +1,6 @@
 import { RDSDataService } from 'aws-sdk';
 import { SqlParametersList } from 'aws-sdk/clients/rdsdataservice';
+import ColumnValue from './ColumnValue';
 
 export interface RDSDataOptions {
   secretArn: string;
@@ -9,8 +10,7 @@ export interface RDSDataOptions {
   rdsConfig?: RDSDataService.Types.ClientConfiguration;
 }
 
-// COLUMNS & PARAMETERS -------------------------
-export interface RDSDataColumn {
+export interface DataColumn {
   name: string;
   tableName: string;
   type: string;
@@ -24,29 +24,19 @@ export interface RDSDataType {
 }
 export type RDSDataTypes = 'stringValue' | 'booleanValue' | 'longValue' | 'isNull' | 'blobValue' | undefined;
 
-export type RDSDataParameterValue = string | Buffer | boolean | number | null | undefined;
+export type ParameterValue = string | Buffer | boolean | number | null | undefined;
 export interface RDSDataParameters {
-  [key: string]: RDSDataParameterValue;
+  [key: string]: ParameterValue;
 }
-export type RDSDataRow = { [key: string]: RDSDataResponseValue };
+export type Row = { [key: string]: ColumnValue };
 
-// RESPONSE TYPES -------------------------------
-export interface RDSDataResponseValue {
-  isNull: boolean;
-  string?: string;
-  date?: Date;
-  boolean?: boolean;
-  buffer?: Buffer;
-  number?: number;
+export interface ResponseData {
+  [key: string]: ColumnValue;
 }
 
-export interface RDSDataResponseData {
-  [key: string]: RDSDataResponseValue;
-}
-
-export interface RDSDataResponse {
-  columns: RDSDataColumn[];
-  data: RDSDataResponseData[];
+export interface Response {
+  columns: DataColumn[];
+  data: ResponseData[];
   numberOfRecordsUpdated: number;
   insertId: number | undefined;
 }
@@ -80,7 +70,7 @@ export class RDSData {
     return this.rds;
   }
 
-  public async query(sql: string, params?: RDSDataParameters, transactionId?: string): Promise<RDSDataResponse> {
+  public async query(sql: string, params?: RDSDataParameters, transactionId?: string): Promise<Response> {
     const parameters = RDSData.formatParameters(params);
     return new Promise((resolve, reject) => {
       let queryParameters: RDSDataService.Types.ExecuteStatementRequest = {
@@ -113,7 +103,7 @@ export class RDSData {
       return [];
     }
 
-    const getType = (val: RDSDataParameterValue): RDSDataTypes => {
+    const getType = (val: ParameterValue): RDSDataTypes => {
       const t = typeof val;
       if (t === 'string') {
         return 'stringValue';
@@ -133,7 +123,7 @@ export class RDSData {
       return undefined;
     };
 
-    const formatType = (name: string, value: RDSDataParameterValue, type: RDSDataTypes): RDSDataType => {
+    const formatType = (name: string, value: ParameterValue, type: RDSDataTypes): RDSDataType => {
       if (!type) {
         throw new Error(`Invalid Type for name: ${name} value: ${value} type: ${type} typeof: ${typeof value}`);
       }
@@ -163,11 +153,11 @@ export class RDSData {
     return parameters;
   }
 
-  private static resultFormat(response: RDSDataService.Types.ExecuteStatementResponse): RDSDataResponse {
+  private static resultFormat(response: RDSDataService.Types.ExecuteStatementResponse): Response {
     const insertId =
       response.generatedFields && response.generatedFields.length > 0 ? response.generatedFields[0].longValue : 0;
-    const columns: RDSDataColumn[] = [];
-    const data: { [key: string]: RDSDataResponseValue }[] = [];
+    const columns: DataColumn[] = [];
+    const data: { [key: string]: ColumnValue }[] = [];
     const numberOfRecordsUpdated = response.numberOfRecordsUpdated ?? 0;
 
     if (response && response.columnMetadata && response.records) {
@@ -180,51 +170,9 @@ export class RDSData {
       });
 
       response.records.forEach((record) => {
-        const row: RDSDataRow = {};
+        const row: Row = {};
         for (let c = 0; c < record.length; c += 1) {
-          /* tslint:disable:no-string-literal */
-          const isNull = record[c].isNull ?? false;
-          const v: RDSDataResponseValue = { isNull };
-          switch (columns[c].type) {
-            case 'BINARY':
-              v.buffer = isNull ? undefined : Buffer.from((record[c].blobValue || '').toString());
-              v.string = isNull ? undefined : v.buffer?.toString('base64');
-              break;
-            case 'BOOL':
-            case 'BIT':
-              v.boolean = isNull ? undefined : record[c].booleanValue;
-              v.number = v.boolean ? 1 : 0;
-              break;
-            case 'TIMESTAMP':
-            case 'DATETIME':
-            case 'DATE':
-              v.date = isNull ? undefined : new Date(record[c].stringValue ?? '');
-              v.string = isNull ? undefined : record[c].stringValue;
-              v.number = v.date ? v.date.getTime() : 0;
-              break;
-            case 'INTEGER':
-            case 'INTEGER UNSIGNED':
-            case 'INT':
-            case 'INT4':
-            case 'INT8':
-            case 'INT UNSIGNED':
-            case 'BIGINT':
-            case 'BIGINT UNSIGNED':
-            case 'SERIAL':
-              v.number = isNull ? undefined : record[c].longValue;
-              break;
-            case 'UUID':
-            case 'TEXT':
-            case 'CHAR':
-            case 'BPCHAR':
-            case 'VARCHAR':
-              v.string = isNull ? undefined : record[c].stringValue;
-              break;
-            default:
-              throw new Error(`Missing type: ${columns[c].type}`);
-          }
-          /* tslint:enable:no-string-literal */
-          row[columns[c].name] = v;
+          row[columns[c].name] = new ColumnValue(record[c]);
         }
         data.push(row);
       });
