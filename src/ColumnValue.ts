@@ -28,7 +28,7 @@ class ColumnValue {
 
     get buffer(): Buffer | null {
         if (this.isNull) return null;
-        return Buffer.from((this.field.blobValue || '').toString());
+        return Buffer.isBuffer(this.field.blobValue) ? this.field.blobValue : Buffer.from(this.field.blobValue as Uint8Array);
     }
 
     get boolean(): boolean | null {
