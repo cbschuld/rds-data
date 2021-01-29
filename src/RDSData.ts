@@ -22,7 +22,7 @@ export interface RDSDataType {
     [x: string]: string | boolean | Buffer | null;
   };
 }
-export type RDSDataTypes = 'stringValue' | 'booleanValue' | 'longValue' | 'isNull' | 'blobValue' | undefined;
+export type RDSDataTypes = 'stringValue' | 'booleanValue' | 'longValue' | 'isNull' | 'blobValue' | 'doubleValue' |undefined;
 
 export type RDSDataParameterValue = string | Buffer | boolean | number | null | undefined;
 export interface RDSDataParameters {
@@ -122,6 +122,9 @@ export class RDSData {
         return 'booleanValue';
       }
       if (t === 'number') {
+        if (val && val as number % 1 !== 0) {
+          return 'doubleValue';
+        }
         return 'longValue';
       }
       if (val === null) {
@@ -212,6 +215,9 @@ export class RDSData {
             case 'BIGINT UNSIGNED':
             case 'SERIAL':
               v.number = isNull ? undefined : record[c].longValue;
+              break;
+            case 'DECIMAL':
+              v.number = isNull ? undefined : parseFloat(record[c].stringValue!);
               break;
             case 'UUID':
             case 'TEXT':
