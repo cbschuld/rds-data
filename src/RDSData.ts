@@ -213,6 +213,9 @@ export class RDSData {
             case 'SERIAL':
               v.number = isNull ? undefined : record[c].longValue;
               break;
+            case 'DECIMAL':
+              v.number = isNull ? undefined : parseFloat(record[c].stringValue!);
+              break;
             case 'UUID':
             case 'TEXT':
             case 'CHAR':
