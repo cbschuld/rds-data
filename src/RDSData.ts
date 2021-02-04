@@ -205,7 +205,7 @@ export class RDSData {
             case 'INTEGER':
             case 'INTEGER UNSIGNED':
             case 'INT':
-          case 'TINYINT':
+            case 'TINYINT':
             case 'INT4':
             case 'INT8':
             case 'INT UNSIGNED':
