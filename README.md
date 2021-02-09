@@ -101,8 +101,8 @@ Results are managed from the following database types into result types:
 | TIMESTAMP, DATETIME and DATE | *row*.date | a parsed instance of `new Date()` |
 | TIMESTAMP, DATETIME and DATE | *row*.string | the string value of the date/time ISO8601 |
 | TIMESTAMP, DATETIME and DATE | *row*.number | timestamp value of the column |
-| INT, INT UNSIGNED, BIGINT, BIGINT UNSIGNED | *row*.number | numeric value |
-| TEXT, CHAR, VARCHAR | *row*.string | string value |
+| INT, INT UNSIGNED, TINYINT, BIGINT, BIGINT UNSIGNED | *row*.number | numeric value |
+| TEXT, MEDIUMTEXT, CHAR, VARCHAR | *row*.string | string value |
 
 
 ## Overview

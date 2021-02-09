@@ -205,6 +205,7 @@ export class RDSData {
             case 'INTEGER':
             case 'INTEGER UNSIGNED':
             case 'INT':
+            case 'TINYINT':
             case 'INT4':
             case 'INT8':
             case 'INT UNSIGNED':
@@ -215,6 +216,8 @@ export class RDSData {
               break;
             case 'UUID':
             case 'TEXT':
+            case 'MEDIUMTEXT':
+            case 'LONGTEXT':
             case 'CHAR':
             case 'BPCHAR':
             case 'VARCHAR':
