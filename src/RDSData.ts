@@ -217,6 +217,7 @@ export class RDSData {
             case 'UUID':
             case 'TEXT':
             case 'MEDIUMTEXT':
+            case 'LONGTEXT':
             case 'CHAR':
             case 'BPCHAR':
             case 'VARCHAR':
